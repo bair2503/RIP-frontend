@@ -39,26 +39,7 @@ const HomePage: FC = () => {
           </div>
         </div>
 
-        <div className="features-section">
-          <h2>Наши возможности</h2>
-          <div className="features-grid">
-            <div className="feature">
-              <i className="fas fa-calculator"></i>
-              <h3>Математические вычисления</h3>
-              <p>Факториал, НОД, числа Фибоначчи и многое другое</p>
-            </div>
-            <div className="feature">
-              <i className="fas fa-bolt"></i>
-              <h3>Быстрые результаты</h3>
-              <p>Мгновенное получение результатов вычислений</p>
-            </div>
-            <div className="feature">
-              <i className="fas fa-history"></i>
-              <h3>История заявок</h3>
-              <p>Сохраняйте и просматривайте историю ваших вычислений</p>
-            </div>
-          </div>
-        </div>
+        
       </div>
 
       <footer>
