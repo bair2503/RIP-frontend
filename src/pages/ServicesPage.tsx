@@ -110,7 +110,7 @@ const ServicesPage: FC = () => {
       </header>
 
       <div className="cart-container">
-        <Link to="/orders" className="cart-link">
+        <Link to="" className="cart-link">
           <div className="cart-icon">
             <i className="fas fa-shopping-cart"></i>
             <span className="cart-count">1</span>
@@ -243,16 +243,21 @@ const ServiceCard: FC<{ service: Service }> = ({ service }) => {
     <div className="category-card">
       <div className="category-image">
         {service.image_url ? (
-          <img 
-            src={service.image_url} 
+          <img
+            src={service.image_url}
             alt={service.title}
             className="category-image-img"
             onError={(e) => {
+              // Если изображение не загрузилось, показываем иконку
               const target = e.target as HTMLImageElement;
               target.style.display = 'none';
-              const icon = document.createElement('i');
-              icon.className = `fas ${service.icon}`;
-              target.parentNode?.appendChild(icon);
+              // Находим родительский элемент и добавляем иконку
+              const parent = target.parentNode as HTMLElement;
+              if (parent) {
+                const icon = document.createElement('i');
+                icon.className = `fas ${service.icon}`;
+                parent.appendChild(icon);
+              }
             }}
           />
         ) : (

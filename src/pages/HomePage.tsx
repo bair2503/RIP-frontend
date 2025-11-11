@@ -33,9 +33,7 @@ const HomePage: FC = () => {
             <Link to="/services" className="btn btn-primary">
               <i className="fas fa-play"></i> Начать вычисления
             </Link>
-            <Link to="/orders" className="btn btn-secondary">
-              <i className="fas fa-shopping-cart"></i> Мои заявки
-            </Link>
+            
           </div>
         </div>
 

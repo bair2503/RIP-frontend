@@ -7,7 +7,7 @@ import './index.css'
 import HomePage from './pages/HomePage'
 import ServicesPage from './pages/ServicesPage'
 import ServiceDetailPage from './pages/ServiceDetailPage'
-import OrdersPage from './pages/OrdersPage'
+
 
 const router = createBrowserRouter([
   {
@@ -22,10 +22,7 @@ const router = createBrowserRouter([
     path: '/service/:id',
     element: <ServiceDetailPage />,
   },
-  {
-    path: '/orders',
-    element: <OrdersPage />,
-  },
+  
 ])
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
