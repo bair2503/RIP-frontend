@@ -1,10 +1,12 @@
 {
     "name": "Вычислительный калькулятор",
     "short_name": "Калькулятор",
-    "start_url": ".",
+    "description": "Производите сложные математические вычисления с легкостью",
+    "start_url": "/lab5/",
     "display": "standalone",
     "background_color": "#ffffff",
     "theme_color": "#ff3333",
+    "orientation": "portrait-primary",
     "icons": [
         {
             "src": "vite.svg",
