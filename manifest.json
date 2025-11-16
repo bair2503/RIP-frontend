@@ -2,7 +2,7 @@
     "name": "Вычислительный калькулятор",
     "short_name": "Калькулятор",
     "description": "Производите сложные математические вычисления с легкостью",
-    "start_url": "/lab5/",
+    "start_url": "/RIP-frontend/",
     "display": "standalone",
     "background_color": "#ffffff",
     "theme_color": "#ff3333",
@@ -18,9 +18,5 @@
             "sizes": "512x512",
             "type": "image/svg+xml"
         }
-    ],
-    "categories": [
-        "education",
-        "productivity"
     ]
 }
