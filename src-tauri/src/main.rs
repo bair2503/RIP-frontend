@@ -1,18 +1,8 @@
-use local_ip_address::local_ip;
+// Prevents additional console window on Windows in release, DO NOT REMOVE!!
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    let ip = local_ip().unwrap();
-    println!("🌐 Local IP Address: {}", ip);
-    println!("🚀 Tauri Application Starting...");
-    println!("📡 Backend Target: http://192.168.1.50:8000");
-    println!("🔧 Frontend URL: https://localhost:5173/RIP-frontend/");
-    
-    tauri::Builder::default()
-        .setup(move |_app| {
-            println!("✅ Tauri app initialized successfully");
-            println!("🔗 Backend connection ready via proxy");
-            Ok(())
-        })
-        .run(tauri::generate_context!())
-        .expect("❌ Error while running Tauri application");
+  tauri::Builder::default()
+    .run(tauri::generate_context!())
+    .expect("error while running tauri application");
 }

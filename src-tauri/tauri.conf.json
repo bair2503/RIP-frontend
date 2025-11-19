@@ -1,38 +1,59 @@
 {
+  "$schema": "../node_modules/@tauri-apps/cli/schema.json",
   "build": {
-    "beforeBuildCommand": "",
+    "beforeBuildCommand": "npm run build",
     "beforeDevCommand": "",
     "devPath": "https://localhost:3000/RIP-frontend/",
     "distDir": "../dist"
   },
   "package": {
-    "productName": "Calculator App",
+    "productName": "Вычислительный калькулятор",
     "version": "0.1.0"
   },
   "tauri": {
     "allowlist": {
-      "all": true,
-      "http": {
-        "all": true,
-        "request": true,
-        "scope": [
-          "https://localhost:3000/**",
-          "https://192.168.1.50:3000/**"
-        ]
-      }
+      "all": false
     },
     "bundle": {
-      "active": false,
-      "identifier": "com.calculator.app"
+      "active": true,
+      "category": "DeveloperTool",
+      "copyright": "",
+      "deb": {
+        "depends": []
+      },
+      "externalBin": [],
+      "icon": [
+        "icons/32x32.png",
+        "icons/128x128.png",
+        "icons/128x128@2x.png",
+        "icons/icon.icns",
+        "icons/icon.ico"
+      ],
+      "identifier": "com.calculator.app",
+      "longDescription": "",
+      "macOS": {
+        "entitlements": null,
+        "exceptionDomain": "",
+        "frameworks": [],
+        "providerShortName": null,
+        "signingIdentity": null
+      },
+      "resources": [],
+      "shortDescription": "",
+      "targets": "all"
     },
     "security": {
-      "csp": "default-src 'self' http: https: ws: wss: data: blob: 'unsafe-inline' 'unsafe-eval'"
+      "csp": null
+    },
+    "updater": {
+      "active": false
     },
     "windows": [
       {
+        "fullscreen": false,
         "height": 600,
         "resizable": true,
-        "title": "Calculator App",
+        "title": "Вычислительный калькулятор",
         "width": 800
       }
     ]
