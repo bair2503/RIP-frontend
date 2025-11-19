@@ -5,7 +5,7 @@ export const store = configureStore({
     reducer: {
         filters: filtersReducer,
     },
-    devTools: process.env.NODE_ENV !== 'production',
+    devTools: import.meta.env.DEV, // Используем Vite env переменные
 });
 
 export type RootState = ReturnType<typeof store.getState>;

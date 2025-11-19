@@ -5,6 +5,7 @@ import { Container } from 'react-bootstrap';
 import { servicesApi } from '../api/servicesApi';
 import type { Service } from '../types';
 import Breadcrumbs from '../components/Breadcrumbs';
+import { Navbar } from '../components/Navbar';
 
 const ServiceDetailPage: FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -32,34 +33,16 @@ const ServiceDetailPage: FC = () => {
   if (loading) {
     return (
       <div>
-        <header>
-          <Container>
-            <div className="header-content">
-              <div className="logo">
-                <i className="fas fa-calculator"></i>
-                <span>Вычислительный калькулятор</span>
-              </div>
-              <nav>
-                <ul>
-                  <li><Link to="/">Главная</Link></li>
-                  <li><Link to="/services">Услуги</Link></li>
-                  <li><a href="#" className="active">Детали услуги</a></li>
-                </ul>
-              </nav>
-            </div>
-          </Container>
-        </header>
-        <Container className="main-content">
+        <Navbar />
+        <Container className="main-content mt-5">
           <div className="text-center">
             <div className="spinner-border" role="status">
               <span className="visually-hidden">Загрузка...</span>
             </div>
           </div>
         </Container>
-        <footer>
-          <Container>
-            <p>© 2025 Вычислительный калькулятор. Все права защищены.</p>
-          </Container>
+        <footer className="text-center mt-5">
+          <p>© 2025 Вычислительный калькулятор. Все права защищены.</p>
         </footer>
       </div>
     );
@@ -68,24 +51,12 @@ const ServiceDetailPage: FC = () => {
   if (!service) {
     return (
       <div>
-        <header>
-          <Container>
-            <div className="header-content">
-              <div className="logo">
-                <i className="fas fa-calculator"></i>
-                <span>Вычислительный калькулятор</span>
-              </div>
-              <nav>
-                <ul>
-                  <li><Link to="/">Главная</Link></li>
-                  <li><Link to="/services">Услуги</Link></li>
-                  <li><a href="#" className="active">Детали услуги</a></li>
-                </ul>
-              </nav>
-            </div>
-          </Container>
-        </header>
-        <Container className="main-content">
+        <Navbar />
+        <Container className="main-content mt-5">
+          <Breadcrumbs items={[
+            { label: 'Услуги', path: '/services' },
+            { label: 'Не найдено' }
+          ]} />
           <div className="text-center">
             <h3>Услуга не найдена</h3>
             <Link to="/services" className="btn btn-primary">
@@ -93,10 +64,8 @@ const ServiceDetailPage: FC = () => {
             </Link>
           </div>
         </Container>
-        <footer>
-          <Container>
-            <p>© 2025 Вычислительный калькулятор. Все права защищены.</p>
-          </Container>
+        <footer className="text-center mt-5">
+          <p>© 2025 Вычислительный калькулятор. Все права защищены.</p>
         </footer>
       </div>
     );
@@ -104,24 +73,8 @@ const ServiceDetailPage: FC = () => {
 
   return (
     <div>
-      <header>
-        <Container>
-          <div className="header-content">
-            <div className="logo">
-              <i className="fas fa-calculator"></i>
-              <span>Вычислительный калькулятор</span>
-            </div>
-            <nav>
-              <ul>
-                <li><Link to="/">Главная</Link></li>
-                <li><Link to="/services">Услуги</Link></li>
-                <li><a href="#" className="active">Детали услуги</a></li>
-              </ul>
-            </nav>
-          </div>
-        </Container>
-      </header>
-      <Container className="main-content">
+      <Navbar />
+      <Container className="main-content mt-5">
         <Breadcrumbs items={[
           { label: 'Услуги', path: '/services' },
           { label: service.title }
@@ -144,10 +97,8 @@ const ServiceDetailPage: FC = () => {
           </div>
         </div>
       </Container>
-      <footer>
-        <Container>
-          <p>© 2025 Вычислительный калькулятор. Все права защищены.</p>
-        </Container>
+      <footer className="text-center mt-5">
+        <p>© 2025 Вычислительный калькулятор. Все права защищены.</p>
       </footer>
     </div>
   );

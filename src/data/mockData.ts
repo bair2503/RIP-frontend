@@ -1,4 +1,4 @@
-import type { Service, Order } from '../types';
+import type { Service, } from '../types';
 
 export const servicesData: Service[] = [
   {
@@ -8,7 +8,7 @@ export const servicesData: Service[] = [
     category: 'Математика',
     icon: 'fa-exclamation-circle',
     created_date: '2024-01-15',
-    image_url: 'https://via.placeholder.com/300x200/FF6B6B/FFFFFF?text=Факториал'
+    image_url: '/images/factorial.svg'
   },
   {
     id: 2,
@@ -17,7 +17,7 @@ export const servicesData: Service[] = [
     category: 'Числа',
     icon: 'fa-divide',
     created_date: '2024-01-16',
-    image_url: 'https://via.placeholder.com/300x200/4ECDC4/FFFFFF?text=НОД'
+    image_url: '/images/nod.svg'
   },
   {
     id: 3,
@@ -26,7 +26,6 @@ export const servicesData: Service[] = [
     category: 'Числа',
     icon: 'fa-infinity',
     created_date: '2024-01-17'
-    // image_url отсутствует - будет использована иконка
   },
   {
     id: 4,
@@ -35,19 +34,6 @@ export const servicesData: Service[] = [
     category: 'Алгебра',
     icon: 'fa-superscript',
     created_date: '2024-01-18',
-    image_url: 'https://via.placeholder.com/300x200/45B7D1/FFFFFF?text=Уравнение'
+    image_url: '/images/equation.svg'
   }
 ];
-
-export const ordersData: { [key: number]: Order } = {
-  1: {
-    id: 1,
-    user_name: 'Иван Иванов',
-    service: servicesData[0],
-    operand: '5',
-    result: '120',
-    status: 'completed',
-    created_date: '15.09.2025',
-    get_status_display: 'Завершено'
-  }
-};

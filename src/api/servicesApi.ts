@@ -1,23 +1,17 @@
 import type { Service, FilterParams } from '../types';
 import { servicesData } from '../data/mockData';
 
-// Функция для определения базового URL в зависимости от среды
-const getApiBaseUrl = (): string => {
-  // Проверяем, работает ли приложение в Tauri
-  if (typeof window !== 'undefined' && (window as any).__TAURI__) {
-    // Для Tauri используем локальный IP сервера - ВАШ РЕАЛЬНЫЙ IP
-    const TAURI_API_BASE = 'http://192.168.1.50:8000/api';
-    console.log('🔧 Tauri environment detected, using API:', TAURI_API_BASE);
-    return TAURI_API_BASE;
-  }
+// Единый API endpoint для всех окружений (браузер и Tauri)
+const API_BASE_URL = '/api';
 
-  // Для браузера используем прокси или env переменную
-  const browserApiBase = import.meta.env.VITE_API_BASE_URL || '/api';
-  console.log('🌐 Browser environment, using API:', browserApiBase);
-  return browserApiBase;
+// Детальное логирование для Wireshark анализа
+const logNetworkInfo = (url: string, method: string = 'GET') => {
+  console.log('🔍 Network Analysis:');
+  console.log('  - Frontend URL:', window.location.href);
+  console.log('  - API Request:', `${method} ${url}`);
+  console.log('  - Tauri Environment:', !!(window as any).__TAURI__);
+  console.log('  - Timestamp:', new Date().toISOString());
 };
-
-const API_BASE_URL = getApiBaseUrl();
 
 export const servicesApi = {
   async getServices(filters?: FilterParams): Promise<Service[]> {
@@ -25,7 +19,7 @@ export const servicesApi = {
       let url = `${API_BASE_URL}/services/`;
       const queryParams = new URLSearchParams();
 
-      // Добавляем параметры фильтрации, если они есть
+      // Параметры фильтрации
       if (filters) {
         if (filters.search) queryParams.append('search', filters.search);
         if (filters.category && filters.category !== 'Все') {
@@ -37,13 +31,13 @@ export const servicesApi = {
         if (filters.endDate) queryParams.append('end_date', filters.endDate);
       }
 
-      // Добавляем query parameters если есть фильтры
       const queryString = queryParams.toString();
       if (queryString) {
         url += `?${queryString}`;
       }
 
-      console.log('🔄 Fetching from backend:', url);
+      logNetworkInfo(url, 'GET');
+      console.log('🔄 Fetching services from proxy...');
 
       const response = await fetch(url, {
         method: 'GET',
@@ -54,24 +48,132 @@ export const servicesApi = {
 
       if (response.ok) {
         const data = await response.json();
-        console.log('✅ Backend response received:', {
+        console.log('✅ Backend response successful:', {
           count: data.length,
-          services: data.map((s: Service) => ({ id: s.id, title: s.title, image_url: s.image_url }))
+          environment: (window as any).__TAURI__ ? 'Tauri' : 'Browser',
+          port: window.location.port
         });
         return data;
       } else {
-        throw new Error(`Backend responded with status: ${response.status}`);
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
     } catch (error) {
-      console.log('⚠️ Using mock data due to backend unavailability:', error);
+      console.log('⚠️ Fallback to mock data:', error);
 
-      // Fallback на mock данные с фильтрацией на фронтенде
+      // Mock данные с фильтрацией
       if (filters && Object.keys(filters).some(key => filters[key as keyof FilterParams])) {
         return this.filterMockServices(servicesData, filters);
       }
 
       return servicesData;
     }
+  },
+
+  async getServiceById(id: number): Promise<Service> {
+    try {
+      const url = `${API_BASE_URL}/services/${id}/`;
+      logNetworkInfo(url, 'GET');
+      console.log('🔄 Fetching service details...');
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Service details loaded from backend');
+        return data;
+      } else {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+    } catch (error) {
+      console.log('⚠️ Using mock data for service details:', error);
+      const service = servicesData.find(s => s.id === id);
+      if (!service) {
+        throw new Error(`Service with id ${id} not found`);
+      }
+      return service;
+    }
+  },
+
+  async createOrder(orderData: any): Promise<any> {
+    try {
+      const url = `${API_BASE_URL}/orders/`;
+      logNetworkInfo(url, 'POST');
+      console.log('🔄 Creating order...');
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Order created successfully');
+        return data;
+      } else {
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+    } catch (error) {
+      console.log('⚠️ Using mock for order creation:', error);
+      // Mock ответ
+      return {
+        id: Date.now(),
+        status: 'created',
+        ...orderData,
+        created_date: new Date().toISOString().split('T')[0]
+      };
+    }
+  },
+
+  async healthCheck(): Promise<{ status: string; environment: string; port: string }> {
+    try {
+      const url = `${API_BASE_URL}/services/`;
+      logNetworkInfo(url, 'HEAD');
+
+      const response = await fetch(url, { method: 'HEAD' });
+
+      if (response.ok) {
+        return {
+          status: 'connected',
+          environment: (window as any).__TAURI__ ? 'Tauri' : 'Browser',
+          port: window.location.port || '5173'
+        };
+      } else {
+        return {
+          status: 'error',
+          environment: (window as any).__TAURI__ ? 'Tauri' : 'Browser',
+          port: window.location.port || '5173'
+        };
+      }
+    } catch (error) {
+      return {
+        status: 'disconnected',
+        environment: (window as any).__TAURI__ ? 'Tauri' : 'Browser',
+        port: window.location.port || '5173'
+      };
+    }
+  },
+
+  getConnectionInfo(): {
+    environment: string;
+    frontendPort: string;
+    backendIP: string;
+    protocol: string;
+  } {
+    return {
+      environment: (window as any).__TAURI__ ? 'Tauri' : 'Browser',
+      frontendPort: window.location.port || '3000',
+      backendIP: '192.168.1.50:8000',
+      protocol: window.location.protocol
+    };
   },
 
   filterMockServices(services: Service[], filters: FilterParams): Service[] {
@@ -118,126 +220,9 @@ export const servicesApi = {
 
     console.log('🎯 Mock filtering applied:', {
       original: services.length,
-      filtered: filtered.length,
-      filters
+      filtered: filtered.length
     });
 
     return filtered;
-  },
-
-  async getServiceById(id: number): Promise<Service> {
-    try {
-      const url = `${API_BASE_URL}/services/${id}/`;
-      console.log('🔄 Fetching service details:', url);
-
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log('✅ Backend service detail response:', {
-          id: data.id,
-          title: data.title,
-          hasImage: !!data.image_url
-        });
-        return data;
-      } else {
-        throw new Error(`Backend responded with status: ${response.status}`);
-      }
-    } catch (error) {
-      console.log('⚠️ Using mock data for service details:', error);
-      const service = servicesData.find(s => s.id === id);
-      if (!service) {
-        console.error('❌ Service not found in mock data:', id);
-        throw new Error(`Service with id ${id} not found`);
-      }
-      console.log('🔄 Using mock service:', service.title);
-      return service;
-    }
-  },
-
-  async createOrder(orderData: any): Promise<any> {
-    try {
-      const url = `${API_BASE_URL}/orders/`;
-      console.log('🔄 Creating order:', url);
-
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(orderData),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log('✅ Order created successfully:', { id: data.id, status: data.status });
-        return data;
-      } else {
-        const errorText = await response.text();
-        throw new Error(`Backend responded with status: ${response.status} - ${errorText}`);
-      }
-    } catch (error) {
-      console.log('⚠️ Using mock for order creation:', error);
-      // Mock ответ для заказа
-      const mockOrder = {
-        id: Date.now(),
-        status: 'created',
-        ...orderData,
-        created_date: new Date().toISOString().split('T')[0]
-      };
-      console.log('🔄 Using mock order:', mockOrder);
-      return mockOrder;
-    }
-  },
-
-  // Новый метод для проверки подключения к бэкенду
-  async healthCheck(): Promise<{ status: string; apiBase: string; environment: string }> {
-    try {
-      const url = `${API_BASE_URL}/services/`;
-      console.log('🔍 Health check:', url);
-
-      const response = await fetch(url, {
-        method: 'HEAD',
-      });
-
-      if (response.ok) {
-        const environment = (window as any).__TAURI__ ? 'Tauri' : 'Browser';
-        console.log('✅ Backend health check: OK - Environment:', environment);
-        return {
-          status: 'connected',
-          apiBase: API_BASE_URL,
-          environment: environment
-        };
-      } else {
-        console.log('❌ Backend health check: Failed with status', response.status);
-        return {
-          status: 'error',
-          apiBase: API_BASE_URL,
-          environment: 'Browser'
-        };
-      }
-    } catch (error) {
-      console.log('❌ Backend health check: Connection failed', error);
-      return {
-        status: 'disconnected',
-        apiBase: API_BASE_URL,
-        environment: 'Browser'
-      };
-    }
-  },
-
-  // Метод для получения информации о подключении (для демонстрации)
-  getConnectionInfo(): { apiBase: string; environment: string; localIP: string } {
-    const environment = (window as any).__TAURI__ ? 'Tauri' : 'Browser';
-    return {
-      apiBase: API_BASE_URL,
-      environment: environment,
-      localIP: '192.168.1.50' // Ваш IP для демонстрации
-    };
   }
 };

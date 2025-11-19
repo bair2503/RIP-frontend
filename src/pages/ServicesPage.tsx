@@ -5,15 +5,19 @@ import { Container, Row, Col, Card, Button } from 'react-bootstrap';
 import { servicesApi } from '../api/servicesApi';
 import type { Service } from '../types';
 import Breadcrumbs from '../components/Breadcrumbs';
+import { Navbar } from '../components/Navbar';
+import { useAppSelector, useAppDispatch } from '../store/hooks';
+import { setSearch, setCategory, clearFilters } from '../store/filtersSlice';
 
 const ServicesPage: FC = () => {
   const [allServices, setAllServices] = useState<Service[]>([]);
   const [displayedServices, setDisplayedServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string>('Все');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeSearch, setActiveSearch] = useState<string>('');
-  
+
+  // Используем Redux для управления состоянием фильтров
+  const { search, category } = useAppSelector(state => state.filters);
+  const dispatch = useAppDispatch();
+
   const categories = ['Все', 'Математика', 'Числа', 'Алгебра'];
 
   // Загружаем услуги при монтировании компонента
@@ -21,10 +25,10 @@ const ServicesPage: FC = () => {
     loadServices();
   }, []);
 
-  // Применяем фильтры при изменении категории или активного поиска
+  // Применяем фильтры только при изменении данных или категории
   useEffect(() => {
     applyFilters();
-  }, [allServices, selectedCategory, activeSearch]);
+  }, [allServices, category]); // Убрали search из зависимостей
 
   const loadServices = async () => {
     setLoading(true);
@@ -42,15 +46,15 @@ const ServicesPage: FC = () => {
     let filtered = [...allServices];
 
     // Применяем фильтр по категории (если выбрана не "Все")
-    if (selectedCategory !== 'Все') {
+    if (category !== 'Все') {
       filtered = filtered.filter(service =>
-        service.category === selectedCategory
+        service.category === category
       );
     }
 
-    // Применяем активный поиск (если есть активный поисковый запрос)
-    if (activeSearch.trim()) {
-      const searchLower = activeSearch.toLowerCase();
+    // Применяем активный поиск (если есть поисковый запрос)
+    if (search.trim()) {
+      const searchLower = search.toLowerCase();
       filtered = filtered.filter(service =>
         service.title.toLowerCase().includes(searchLower) ||
         service.description.toLowerCase().includes(searchLower) ||
@@ -61,66 +65,57 @@ const ServicesPage: FC = () => {
     setDisplayedServices(filtered);
   };
 
-  const handleSearch = () => {
-    setActiveSearch(searchQuery);
+  const handleSearchChange = (value: string) => {
+    dispatch(setSearch(value));
+    // Убрали автоматическое применение фильтров
+  };
+
+  const handleSearchSubmit = () => {
+    // Явно применяем фильтры при нажатии кнопки "Найти"
+    applyFilters();
   };
 
   const handleClearSearch = () => {
-    setSearchQuery('');
-    setActiveSearch('');
+    dispatch(setSearch(''));
+    applyFilters();
   };
 
-  const handleCategorySelect = (category: string) => {
-    setSelectedCategory(category);
+  // Добавляем недостающие функции
+  const handleCategorySelect = (selectedCategory: string) => {
+    dispatch(setCategory(selectedCategory));
   };
 
   const handleClearCategory = () => {
-    setSelectedCategory('Все');
+    dispatch(setCategory('Все'));
   };
 
   const handleClearAll = () => {
-    setSelectedCategory('Все');
-    setSearchQuery('');
-    setActiveSearch('');
+    dispatch(clearFilters());
+    applyFilters();
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      handleSearch();
+      handleSearchSubmit();
     }
   };
 
   return (
     <div>
-      <header>
-        <Container>
-          <div className="header-content">
-            <div className="logo">
-              <i className="fas fa-calculator"></i>
-              <span>Вычислительный калькулятор</span>
-            </div>
-            <nav>
-              <ul>
-                <li><Link to="/">Главная</Link></li>
-                <li><a href="#" className="active">Услуги</a></li>
-              </ul>
-            </nav>
-          </div>
-        </Container>
-      </header>
+      <Navbar />
 
-      <div className="cart-container">
+      {/* Корзина */}
+      <div className="cart-container-fixed">
         <Link to="" className="cart-link">
           <div className="cart-icon">
             <i className="fas fa-shopping-cart"></i>
-            <span className="cart-count">1</span>
+            <span className="cart-count">0</span>
           </div>
         </Link>
       </div>
 
       <Container className="main-content">
         <Breadcrumbs items={[{ label: 'Услуги' }]} />
-        
         <h1 className="page-title">Математические вычисления</h1>
         <p className="page-subtitle">Выберите тип вычисления для расчета</p>
 
@@ -131,15 +126,15 @@ const ServicesPage: FC = () => {
               type="text"
               className="search-input"
               placeholder="Поиск услуг..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={search}
+              onChange={(e) => handleSearchChange(e.target.value)}
               onKeyPress={handleKeyPress}
             />
-            <button className="search-button" onClick={handleSearch}>
+            <button className="search-button" onClick={handleSearchSubmit}>
               Найти
             </button>
-            {activeSearch && (
-              <button 
+            {search && (
+              <button
                 className="search-clear-button"
                 onClick={handleClearSearch}
                 title="Очистить поиск"
@@ -150,7 +145,7 @@ const ServicesPage: FC = () => {
           </div>
         </div>
 
-        {/* Красивые фильтры по категориям */}
+        {/* Фильтры по категориям */}
         <Card className="mb-4 filter-card">
           <Card.Body>
             <Row className="align-items-center">
@@ -161,14 +156,14 @@ const ServicesPage: FC = () => {
                     Фильтр по категориям:
                   </div>
                   <div className="category-buttons">
-                    {categories.map(category => (
+                    {categories.map(cat => (
                       <button
-                        key={category}
-                        className={`category-btn ${selectedCategory === category ? 'active' : ''}`}
-                        onClick={() => handleCategorySelect(category)}
+                        key={cat}
+                        className={`category-btn ${category === cat ? 'active' : ''}`}
+                        onClick={() => handleCategorySelect(cat)}
                       >
-                        {category}
-                        {selectedCategory === category && (
+                        {cat}
+                        {category === cat && (
                           <i className="fas fa-check"></i>
                         )}
                       </button>
@@ -178,9 +173,9 @@ const ServicesPage: FC = () => {
               </Col>
               <Col md={4} className="text-end">
                 <div className="filter-actions">
-                  {selectedCategory !== 'Все' && (
-                    <Button 
-                      variant="outline-secondary" 
+                  {category !== 'Все' && (
+                    <Button
+                      variant="outline-secondary"
                       onClick={handleClearCategory}
                       className="clear-category-btn"
                       size="sm"
@@ -188,20 +183,30 @@ const ServicesPage: FC = () => {
                       <i className="fas fa-times"></i> Очистить категорию
                     </Button>
                   )}
-                  <Button 
-                    variant="outline-danger" 
+                  <Button
+                    variant="outline-danger"
                     onClick={handleClearAll}
                     className="clear-all-btn"
                     size="sm"
                   >
-                    <i className=""></i> 
+                    <i className=""></i>
                   </Button>
                 </div>
               </Col>
             </Row>
 
-            {/* Индикатор активного фильтра */}
-            
+            {/* Индикатор активных фильтров */}
+            {(search || category !== 'Все') && (
+              <div className="active-filter-indicator mt-3">
+                <i className="fas fa-info-circle"></i>
+                <span>
+                  Активные фильтры:
+                  {search && ` поиск: "${search}"`}
+                  {search && category !== 'Все' && ', '}
+                  {category !== 'Все' && ` категория: ${category}`}
+                </span>
+              </div>
+            )}
           </Card.Body>
         </Card>
 
@@ -216,7 +221,6 @@ const ServicesPage: FC = () => {
             {displayedServices.map(service => (
               <ServiceCard key={service.id} service={service} />
             ))}
-            
             {displayedServices.length === 0 && (
               <div className="no-services">
                 <i className="fas fa-search"></i>
@@ -227,24 +231,21 @@ const ServicesPage: FC = () => {
           </div>
         )}
       </Container>
-
-      <footer>
-        <Container>
-          <p>© 2025 Вычислительный калькулятор. Все права защищены.</p>
-        </Container>
+      <footer className="text-center mt-5">
+        <p>© 2025 Вычислительный калькулятор. Все права защищены.</p>
       </footer>
     </div>
   );
 };
 
-// Компонент карточки услуги (без изменений)
+// Компонент карточки услуги
 const ServiceCard: FC<{ service: Service }> = ({ service }) => {
   return (
     <div className="category-card">
       <div className="category-image">
         {service.image_url ? (
-          <img 
-            src={service.image_url} 
+          <img
+            src={service.image_url}
             alt={service.title}
             className="category-image-img"
             onError={(e) => {

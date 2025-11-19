@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) navigator.serviceWorker.register('/RIP-frontend/dev-sw.js?dev-sw', { scope: '/RIP-frontend/', type: 'classic' })
