@@ -1,0 +1,24 @@
+# Tauri and Rust
+**/target/
+**/Cargo.lock
+*.rlib
+*.dylib
+*.so
+*.dll
+*.exe
+
+# Build artifacts
+debug/
+release/
+build/
+dist/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
